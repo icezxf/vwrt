@@ -210,8 +210,14 @@ jobs:
 
           if [[ $WRT_TEST != 'true' ]]; then
             echo "WRT_KVER=$(find ./bin/targets/ -type f -name "*.manifest" -exec grep -oP '^kernel - \K[\d\.]+' {} \;)" >> $GITHUB_ENV
-            echo "WRT_LIST=$(find ./bin/targets/ -type f -name "*.manifest" -exec grep -oP '^luci-(app|theme)[^ ]*' {} \; | tr '\n' ' ')" >> $GITHUB_ENV
+          # 将插件列表先存入一个临时变量
+            LIST=$(find ./bin/targets/ -type f -name "*.manifest" -exec grep -oP '^luci-(app|theme)[^ ]*' {} \;)
 
+            # 使用 GitHub Actions 的多行字符串语法写入环境变量
+            echo "WRT_LIST<<EOF" >> $GITHUB_ENV
+            echo "$LIST" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
+            
             find ./bin/targets/ -iregex ".*\(buildinfo\|json\|sha256sums\|packages\)$" -exec rm -rf {} +
 
             for FILE in $(find ./bin/targets/ -type f -iname "*$WRT_TARGET*") ; do
